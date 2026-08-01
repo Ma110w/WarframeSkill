@@ -10,14 +10,22 @@ Honest take: **there is no truly free always-on generic Docker host** that match
 
 ### Recommended: Prefect Horizon (free personal tier)
 
+**Live URL:** `https://warframe.fastmcp.app/mcp`  
+Org: `snakeplisken47` · repo: `Ma110w/WarframeSkill` · auto-deploys from `main`
+
 Built by the FastMCP team. Free for personal projects, GitHub deploy, HTTPS URL like `https://<name>.fastmcp.app/mcp`.
 
-1. Open [horizon.prefect.io](https://horizon.prefect.io) and sign in with GitHub.
-2. Select repo `Ma110w/WarframeSkill`.
-3. Entrypoint: `server.py:mcp` (deps from `requirements.txt`).
-4. Deploy → use the resulting `/mcp` URL in ChatGPT (Developer Mode → connector).
+Horizon **authentication is enabled** on the free tier (Bearer / OAuth). Fully public “Auth: None” needs a paid Developer plan.
 
-Docs: [Prefect Horizon / FastMCP deploy](https://gofastmcp.com/deployment/fastmcp-cloud)
+**ChatGPT (OAuth):**
+1. Enable Developer mode → create a connector / app
+2. Auth: **OAuth**
+3. MCP Server URL: `https://warframe.fastmcp.app/mcp`
+4. Complete the Horizon sign-in when prompted (must be a member of org `snakeplisken47`)
+
+**Other clients:** use the URL above; interactive clients open Horizon sign-in, or send `Authorization: Bearer fmcp_...` from a Horizon API key.
+
+Docs: [Connect a client](https://docs.horizon.prefect.io/connect-a-client) · [Authentication](https://docs.horizon.prefect.io/platform/authentication)
 
 Handshake hardening in this repo (`FASTMCP_STATELESS_HTTP` + immediate `202` on `notifications/*`) still applies on Horizon.
 

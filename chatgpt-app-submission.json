@@ -1,0 +1,476 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "Warframe",
+    "subtitle": "Market, worldstate, builds",
+    "description": "Warframe helps Tenno check live warframe.market prices, inspect current worldstate such as Sortie, Archon Hunt, Void Fissures, Nightwave, invasions, and Baro Ki'Teer, pull community builds and popular mods from Overframe.gg, and estimate Canadian dollar costs for Steam platinum packs with Ontario HST by default. All tools are read-only against public APIs and do not access Warframe account inventories or place trades.",
+    "category": "ENTERTAINMENT"
+  },
+  "tools": {
+    "ping": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Returns a static health-check string and does not call external services or change state.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "wfm_search_items": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Searches warframe.market item catalog and returns matching slugs without placing or changing orders.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "wfm_get_item": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches warframe.market item metadata for a slug and does not modify marketplace state.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "wfm_get_top_orders": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves top buy and sell orders from warframe.market without creating or canceling orders.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "wfm_get_orders": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Lists warframe.market orders for an item without creating, editing, or canceling orders.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "wfm_price_check": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Searches an item name and returns top market prices without performing trades.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_heartbeat": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Checks WarframeStat.us API health and does not modify any data.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_worldstate": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches the live worldstate payload for a platform without changing game or API state.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_field": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves a single worldstate field without modifying upstream data.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_sortie": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches today's Sortie missions and does not alter worldstate.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_archon_hunt": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches the current Archon Hunt and does not alter worldstate.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_fissures": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Lists active Void Fissures with optional filters and does not alter worldstate.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_invasions": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches active invasions and rewards without changing mission state.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_nightwave": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches Nightwave season and challenges without modifying progress.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_void_trader": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches Baro Ki'Teer location, timer, and inventory without making purchases.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_cycles": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches open-world day/night and similar cycles without changing them.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_alerts": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches active alerts without claiming or modifying them.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_arbitration": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches the current Arbitration mission without joining or changing it.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_steel_path": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches Steel Path reward rotation data without claiming rewards.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_daily_deals": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches Darvo daily deals without purchasing items.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_events": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches active world or community events without modifying them.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_search_items": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Searches WarframeStat.us item data and returns matching entries without writing data.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_get_item": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves a single item record from WarframeStat.us without modifying it.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_search_drops": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Searches drop tables for locations and chances without changing drop rates.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "ws_pricecheck": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Runs a WarframeStat.us market price helper lookup without placing orders.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "of_search_items": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Searches Overframe items by name and returns IDs without creating builds.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "of_list_builds": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Lists public Overframe builds for an item without creating or editing builds.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "of_get_build": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches a public Overframe build and resolved mods without modifying the build.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "of_top_mods": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Fetches most-used Overframe mods for an item without changing community stats.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "plat_list_packs": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Returns static platinum pack list prices and does not purchase packs.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "plat_price_pack": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes CAD price with tax for one platinum pack without purchasing anything.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "plat_recommend_packs": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes the cheapest pack combination for a platinum target without purchasing packs.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "plat_to_cad": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Estimates CAD cost for a platinum amount from pack tables without purchasing packs.",
+        "open_world_justification": "Only reads public APIs and does not create, update, or publish data in third-party systems.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Confirm the MCP server is reachable before other workflows.",
+      "user_prompt": "Ping the Warframe server and tell me if it is up.",
+      "file_attachment_urls": null,
+      "tools_triggered": "ping",
+      "expected_output": "Reports that the server responded ok.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Look up live marketplace prices for a primed mod.",
+      "user_prompt": "How much is Primed Convulsion selling for on warframe.market right now?",
+      "file_attachment_urls": null,
+      "tools_triggered": "wfm_price_check",
+      "expected_output": "Returns matching item slug and current top buy/sell platinum prices.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Fetch today's Sortie from live worldstate.",
+      "user_prompt": "What is today's Sortie on PC?",
+      "file_attachment_urls": null,
+      "tools_triggered": "ws_get_sortie",
+      "expected_output": "Lists the current Sortie boss, missions, and modifiers for PC.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Pull a community Incarnon build from Overframe.",
+      "user_prompt": "Find a strong Dual Toxocyst Incarnon build on Overframe and show the mods.",
+      "file_attachment_urls": null,
+      "tools_triggered": "of_list_builds → of_get_build",
+      "expected_output": "Lists matching builds, then returns a full build with mod names, ranks, and a link.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Recommend Steam platinum packs with Ontario tax.",
+      "user_prompt": "I need about 250 platinum on PC in Ontario. Which packs should I buy and what is the CAD total with tax?",
+      "file_attachment_urls": null,
+      "tools_triggered": "plat_recommend_packs",
+      "expected_output": "Recommends a pack combination totaling at least 250 platinum and reports CAD subtotal, HST, and total.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not place or cancel warframe.market orders.",
+      "user_prompt": "Log into warframe.market and cancel all of my sell orders.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked for write or account actions; tools are read-only price lookups.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not access private Warframe account inventory.",
+      "user_prompt": "Show every mod I own in my Warframe inventory and their ranks.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked for private inventory; it has no Warframe account login tools.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not answer unrelated calendar or email requests.",
+      "user_prompt": "What meetings do I have tomorrow and summarize my unread email?",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because the request is outside Warframe market, worldstate, builds, and platinum workflows.",
+      "expected_output_url": null
+    }
+  ]
+}

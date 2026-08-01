@@ -104,8 +104,15 @@ def _http_app(*args: Any, **kwargs: Any):
 
 mcp.http_app = _http_app  # type: ignore[method-assign]
 
+# ChatGPT Apps / MCP submission requires explicit hints on every tool.
+_READ_ONLY_ANNOTATIONS = {
+    "readOnlyHint": True,
+    "openWorldHint": False,
+    "destructiveHint": False,
+}
 
-@mcp.tool
+
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 def ping() -> str:
     """Health check — returns ok if the Warframe MCP server is running."""
     return "ok"
@@ -193,7 +200,7 @@ def _check_language(language: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def wfm_search_items(
     query: str,
     platform: str = "pc",
@@ -231,7 +238,7 @@ async def wfm_search_items(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def wfm_get_item(
     slug: str,
     platform: str = "pc",
@@ -250,7 +257,7 @@ async def wfm_get_item(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def wfm_get_top_orders(
     slug: str,
     platform: str = "pc",
@@ -278,7 +285,7 @@ async def wfm_get_top_orders(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def wfm_get_orders(
     slug: str,
     platform: str = "pc",
@@ -337,7 +344,7 @@ async def wfm_get_orders(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def wfm_price_check(
     query: str,
     platform: str = "pc",
@@ -405,7 +412,7 @@ async def wfm_price_check(
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_heartbeat() -> str:
     """Check that the WarframeStat.us API is healthy."""
     try:
@@ -414,7 +421,7 @@ async def ws_heartbeat() -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_worldstate(
     platform: str = "pc",
     language: str | None = None,
@@ -431,7 +438,7 @@ async def ws_get_worldstate(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_field(
     field: WorldstateField,
     platform: str = "pc",
@@ -447,7 +454,7 @@ async def ws_get_field(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_sortie(platform: str = "pc", language: str | None = None) -> str:
     """Get today's Sortie missions, boss, and modifiers."""
     try:
@@ -457,7 +464,7 @@ async def ws_get_sortie(platform: str = "pc", language: str | None = None) -> st
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_archon_hunt(platform: str = "pc", language: str | None = None) -> str:
     """Get the current Archon Hunt."""
     try:
@@ -467,7 +474,7 @@ async def ws_get_archon_hunt(platform: str = "pc", language: str | None = None) 
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_fissures(
     platform: str = "pc",
     language: str | None = None,
@@ -493,7 +500,7 @@ async def ws_get_fissures(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_invasions(platform: str = "pc", language: str | None = None) -> str:
     """Get active invasions and their rewards."""
     try:
@@ -506,7 +513,7 @@ async def ws_get_invasions(platform: str = "pc", language: str | None = None) ->
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_nightwave(platform: str = "pc", language: str | None = None) -> str:
     """Get Nightwave season info and active challenges."""
     try:
@@ -516,7 +523,7 @@ async def ws_get_nightwave(platform: str = "pc", language: str | None = None) ->
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_void_trader(platform: str = "pc", language: str | None = None) -> str:
     """Get Baro Ki'Teer (Void Trader) location, timer, and inventory."""
     try:
@@ -526,7 +533,7 @@ async def ws_get_void_trader(platform: str = "pc", language: str | None = None) 
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_cycles(platform: str = "pc", language: str | None = None) -> str:
     """Get open-world / zone cycles: Cetus, Vallis, Cambion, Earth, Zariman, Duviri."""
     try:
@@ -547,7 +554,7 @@ async def ws_get_cycles(platform: str = "pc", language: str | None = None) -> st
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_alerts(platform: str = "pc", language: str | None = None) -> str:
     """Get active alerts."""
     try:
@@ -557,7 +564,7 @@ async def ws_get_alerts(platform: str = "pc", language: str | None = None) -> st
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_arbitration(platform: str = "pc", language: str | None = None) -> str:
     """Get the current Arbitration mission."""
     try:
@@ -567,7 +574,7 @@ async def ws_get_arbitration(platform: str = "pc", language: str | None = None) 
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_steel_path(platform: str = "pc", language: str | None = None) -> str:
     """Get Steel Path rewards rotation and timers."""
     try:
@@ -577,7 +584,7 @@ async def ws_get_steel_path(platform: str = "pc", language: str | None = None) -
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_daily_deals(platform: str = "pc", language: str | None = None) -> str:
     """Get Darvo daily deals."""
     try:
@@ -587,7 +594,7 @@ async def ws_get_daily_deals(platform: str = "pc", language: str | None = None) 
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_events(platform: str = "pc", language: str | None = None) -> str:
     """Get active world events / community events."""
     try:
@@ -597,7 +604,7 @@ async def ws_get_events(platform: str = "pc", language: str | None = None) -> st
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_search_items(query: str, language: str | None = None) -> str:
     """Search Warframe item data (stats, components, etc.) via warframestat.us."""
     try:
@@ -620,7 +627,7 @@ async def ws_search_items(query: str, language: str | None = None) -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_get_item(item: str, language: str | None = None) -> str:
     """Get a specific item by name/uniqueName from warframestat.us item data."""
     try:
@@ -629,7 +636,7 @@ async def ws_get_item(item: str, language: str | None = None) -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_search_drops(query: str) -> str:
     """Search drop locations/chances for an item (relics, missions, etc.)."""
     try:
@@ -641,7 +648,7 @@ async def ws_search_drops(query: str) -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def ws_pricecheck(item_type: str, query: str) -> str:
     """WarframeStat.us warframe.market price-check helper.
 
@@ -659,7 +666,7 @@ async def ws_pricecheck(item_type: str, query: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def of_search_items(query: str, limit: int = 20) -> str:
     """Search Overframe's item search box (warframes, weapons, companions, etc.).
 
@@ -674,7 +681,7 @@ async def of_search_items(query: str, limit: int = 20) -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def of_list_builds(
     item: str | None = None,
     item_id: int | None = None,
@@ -710,7 +717,7 @@ async def of_list_builds(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def of_get_build(build_id: int, resolve_mods: bool = True) -> str:
     """Get a full Overframe build, including slot mods (names, ranks, drain).
 
@@ -724,7 +731,7 @@ async def of_get_build(build_id: int, resolve_mods: bool = True) -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 async def of_top_mods(item: str, limit: int = 20) -> str:
     """Get the most-used mods on Overframe for an item.
 
@@ -742,7 +749,7 @@ async def of_top_mods(item: str, limit: int = 20) -> str:
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 def plat_list_packs(platform: str = "pc") -> str:
     """List Warframe Platinum packs and CAD/USD list prices for a platform.
 
@@ -764,7 +771,7 @@ def plat_list_packs(platform: str = "pc") -> str:
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 def plat_price_pack(
     platinum: int,
     platform: str = "pc",
@@ -792,7 +799,7 @@ def plat_price_pack(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 def plat_recommend_packs(
     target_platinum: int,
     platform: str = "pc",
@@ -822,7 +829,7 @@ def plat_recommend_packs(
         return _err(exc)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY_ANNOTATIONS)
 def plat_to_cad(
     platinum: int,
     platform: str = "pc",
