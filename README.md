@@ -4,34 +4,39 @@ FastMCP server for [Warframe.market](https://docs.warframe.market/docs/intro/), 
 
 Author: snakeplisken47
 
-## Remote host (ChatGPT skill)
+## Remote host (ChatGPT skill) — free options
 
-**Live connector URL:**
+Honest take: **there is no truly free always-on generic Docker host** that matches Cloudflare Containers without a card / paid plan. For this FastMCP project, the best free path is a **managed MCP host**, not a general PaaS.
 
-`https://warframe-mcp.snakeplisken47.workers.dev/mcp`
+### Recommended: Prefect Horizon (free personal tier)
 
-Hosted on **Cloudflare Containers** (not self-hosted). Handshake is hardened for streamable HTTP (`FASTMCP_STATELESS_HTTP` + immediate `202` on `notifications/*`).
+Built by the FastMCP team. Free for personal projects, GitHub deploy, HTTPS URL like `https://<name>.fastmcp.app/mcp`.
 
-- **ChatGPT:** Settings → Developer Mode → add connector → that URL (Auth: None unless you add auth later).
+1. Open [horizon.prefect.io](https://horizon.prefect.io) and sign in with GitHub.
+2. Select repo `Ma110w/WarframeSkill`.
+3. Entrypoint: `server.py:mcp` (deps from `requirements.txt`).
+4. Deploy → use the resulting `/mcp` URL in ChatGPT (Developer Mode → connector).
 
-Requires a **Workers Paid** account ($5/mo) for Containers.
+Docs: [Prefect Horizon / FastMCP deploy](https://gofastmcp.com/deployment/fastmcp-cloud)
 
-### Redeploy from GitHub
+Handshake hardening in this repo (`FASTMCP_STATELESS_HTTP` + immediate `202` on `notifications/*`) still applies on Horizon.
 
-Repo secrets (already configured for Ma110w/WarframeSkill):
+### Other free-ish options (tradeoffs)
 
-- `CLOUDFLARE_API_TOKEN` — Workers Scripts Edit + Workers Containers Edit
-- `CLOUDFLARE_ACCOUNT_ID` — `18226a73a8a43f667d3ed3bd3fbbdd39`
+| Option | Cost | Fit for ChatGPT MCP |
+| --- | --- | --- |
+| **Prefect Horizon** | Free personal | Best match — FastMCP-native |
+| **mcphosting.io** | Free tier | Already tried; `notifications/initialized` hung → Cloudflare **502** |
+| **Google Cloud Run** | Free tier (scale-to-zero) | Works with our `Dockerfile`; cold starts can break picky clients |
+| **Render free** | Free | Sleeps after ~15m idle → bad for connectors |
+| **Railway** | Trial / limited credits | Not permanently free |
+| **Cloudflare Containers** | Workers Paid **$5/mo** | Works well; **canceled** on this account (ends Aug 30, 2026) |
 
-Push to `main`, or run **Actions → Deploy Cloudflare Container → Run workflow**.
+Cloudflare Worker `warframe-mcp` was deleted after cancel. Repo still has optional Container scaffolding (`Dockerfile`, `wrangler.toml`, GH Actions) if you ever re-enable Paid.
 
-Scaffolding: `Dockerfile`, `http_app.py`, `src/index.ts`, `wrangler.toml`, `.github/workflows/deploy-cloudflare.yml`.
+### Horizon-style / mcphosting entrypoint
 
-### Legacy: mcphosting
-
-`https://warframeskill.mcphosting.app/mcp` still serves tools, but `notifications/initialized` has been hanging into Cloudflare **502**s from that gateway — unreliable for ChatGPT / mcp-remote. Prefer Cloudflare Containers above.
-
-Horizon-style hosts (if you use one): entrypoint object `server.py` → `mcp`, deps `requirements.txt`. Do not add a Procfile or second runner.
+Entrypoint object: `server.py` → `mcp`. Dependencies: `requirements.txt`. Do not add a Procfile or second runner.
 
 ## Local (optional, Cursor only)
 

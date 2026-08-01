@@ -5,23 +5,10 @@
 
 name: Deploy Cloudflare Container
 
+# Manual only — Cloudflare Containers needs Workers Paid ($5/mo).
+# Prefer free Prefect Horizon for ChatGPT (see README).
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "Dockerfile"
-      - "wrangler.toml"
-      - "src/**"
-      - "package.json"
-      - "package-lock.json"
-      - "http_app.py"
-      - "server.py"
-      - "clients.py"
-      - "overframe.py"
-      - "platinum.py"
-      - "requirements.txt"
-      - ".github/workflows/deploy-cloudflare.yml"
 
 jobs:
   deploy:
