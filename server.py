@@ -24,17 +24,19 @@ from clients import (
     ws,
 )
 from overframe import of
+from platinum import convert_plat_value, list_packs, price_pack, recommend_packs
 
 mcp = FastMCP(
     name="Warframe",
     instructions=(
         "Query live Warframe marketplace prices (warframe.market v2), "
-        "worldstate / item / drop data (warframestat.us), and Overframe.gg builds. "
+        "worldstate / item / drop data (warframestat.us), Overframe.gg builds, "
+        "and Platinum→CAD pack costs with Ontario tax. "
         "Prefer market slugs like 'nikana_prime_blueprint'. "
         "Use wfm_search_items when the slug is unknown. "
-        "For community builds: of_search_items (search box) → of_list_builds → "
-        "of_get_build (includes resolved mods). "
-        "Default platforms: market=pc, worldstate=pc."
+        "For community builds: of_search_items → of_list_builds → of_get_build. "
+        "For real-money plat cost in Ontario: plat_recommend_packs (default ON 13% HST). "
+        "Default platforms: market=pc, worldstate=pc, plat packs=pc."
     ),
 )
 
@@ -667,6 +669,118 @@ async def of_top_mods(item: str, limit: int = 20) -> str:
     try:
         limit = max(1, min(int(limit), 50))
         return _ok(await of.top_mods(item, limit=limit))
+    except Exception as exc:
+        return _err(exc)
+
+
+# ---------------------------------------------------------------------------
+# Platinum → CAD (+ tax) tools
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool
+def plat_list_packs(platform: str = "pc") -> str:
+    """List Warframe Platinum packs and CAD/USD list prices for a platform.
+
+    Prices from the WARFRAME Wiki Platinum table (Steam/regional).
+    platform: pc (default), xbox, or playstation.
+    Note: 3450 plat is not on PC; 4600 is not on PlayStation.
+    """
+    try:
+        packs = list_packs(platform)  # type: ignore[arg-type]
+        return _ok(
+            {
+                "platform": platform,
+                "currency_note": "CAD list prices are pre-tax on Steam; tax added at checkout",
+                "source": "https://wiki.warframe.com/w/Platinum",
+                "packs": packs,
+            }
+        )
+    except Exception as exc:
+        return _err(exc)
+
+
+@mcp.tool
+def plat_price_pack(
+    platinum: int,
+    platform: str = "pc",
+    province: str = "ON",
+    tax_rate: float | None = None,
+    coupon_percent: float = 0.0,
+) -> str:
+    """Price a single Platinum pack in CAD including tax (Ontario HST 13% by default).
+
+    platinum: pack size (75, 175, 380, 1025, 2200, 4600 on PC; +3450 on xbox).
+    province: Canadian province code (default ON). Or pass tax_rate like 0.13.
+    coupon_percent: in-game market coupon % off (applied before tax).
+    """
+    try:
+        return _ok(
+            price_pack(
+                int(platinum),
+                platform=platform,  # type: ignore[arg-type]
+                province=province,
+                tax_rate=tax_rate,
+                coupon_percent=float(coupon_percent),
+            )
+        )
+    except Exception as exc:
+        return _err(exc)
+
+
+@mcp.tool
+def plat_recommend_packs(
+    target_platinum: int,
+    platform: str = "pc",
+    province: str = "ON",
+    tax_rate: float | None = None,
+    coupon_percent: float = 0.0,
+    allow_overshoot: bool = True,
+) -> str:
+    """Recommend which Platinum packs to buy to reach a target amount, with CAD + tax.
+
+    Picks the cheapest combination of real store packs for the platform.
+    Defaults to Ontario 13% HST on top of Steam CAD list prices.
+    Example: need 700 plat for a riven → returns exact packs and total CAD after tax.
+    """
+    try:
+        return _ok(
+            recommend_packs(
+                int(target_platinum),
+                platform=platform,  # type: ignore[arg-type]
+                province=province,
+                tax_rate=tax_rate,
+                coupon_percent=float(coupon_percent),
+                allow_overshoot=bool(allow_overshoot),
+            )
+        )
+    except Exception as exc:
+        return _err(exc)
+
+
+@mcp.tool
+def plat_to_cad(
+    platinum: int,
+    platform: str = "pc",
+    province: str = "ON",
+    tax_rate: float | None = None,
+    coupon_percent: float = 0.0,
+) -> str:
+    """Estimate how much CAD (with tax) it costs to obtain N Platinum via store packs.
+
+    Uses the same pack optimizer as plat_recommend_packs and also reports the
+    best single-pack efficiency rate. Default tax: Ontario HST 13%.
+    """
+    try:
+        return _ok(
+            convert_plat_value(
+                int(platinum),
+                platform=platform,  # type: ignore[arg-type]
+                province=province,
+                tax_rate=tax_rate,
+                coupon_percent=float(coupon_percent),
+            )
+        )
     except Exception as exc:
         return _err(exc)
 

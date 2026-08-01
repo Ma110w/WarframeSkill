@@ -24,7 +24,7 @@ python server.py
 
 ## Tools
 
-`ping`, market tools (`wfm_*`), worldstate tools (`ws_*`), Overframe tools (`of_*`).
+`ping`, market tools (`wfm_*`), worldstate tools (`ws_*`), Overframe tools (`of_*`), Platinum CAD tools (`plat_*`).
 
 ### Overframe flow
 
@@ -34,3 +34,12 @@ python server.py
 4. `of_top_mods` — most-used mods for an item
 
 If static DB loads start failing after an Overframe frontend deploy, set `OVERFRAME_WEBPACK_URL` to the current `https://static.overframe.gg/_next/static/chunks/webpack-*.js` URL from the site.
+
+### Platinum → CAD (Ontario)
+
+Pack list prices from [WARFRAME Wiki: Platinum](https://wiki.warframe.com/w/Platinum). Tax defaults to **Ontario HST 13%** added at checkout (Steam-style).
+
+1. `plat_list_packs` — available packs + CAD/USD for pc/xbox/playstation
+2. `plat_price_pack` — one pack with tax / optional coupon
+3. `plat_recommend_packs` — cheapest pack combo to reach a platinum target
+4. `plat_to_cad` — estimate CAD cost for N platinum via store packs
