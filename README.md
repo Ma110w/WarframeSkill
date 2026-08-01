@@ -1,102 +1,52 @@
 # Warframe MCP Server
 
-Remote MCP server for live Warframe data, built for [mcphosting.io](https://www.mcphosting.io/).
-
-Sources:
-
-- [Warframe.market developer docs](https://docs.warframe.market/docs/intro/) (`https://api.warframe.market/v2/`)
-- [WarframeStat.us API](https://docs.warframestat.us/) (`https://api.warframestat.us/`)
+FastMCP server for [Warframe.market](https://docs.warframe.market/docs/intro/) and [WarframeStat.us](https://docs.warframestat.us/).
 
 Author: snakeplisken47
 
-## Tools
+## Horizon deploy
 
-### Warframe.market
+1. Repo: [Ma110w/WarframeSkill](https://github.com/Ma110w/WarframeSkill), branch **`main`**
+2. Entrypoint: **`main.py`** (or `main.py:mcp`)
+3. Dependency file: `requirements.txt` (Horizon installs FastMCP for you)
+4. After deploy, open **Deployments** and confirm status is **Live**
 
-| Tool | Purpose |
-| --- | --- |
-| `wfm_search_items` | Find tradable item slugs by name |
-| `wfm_get_item` | Item details (ducats, set parts, icons) |
-| `wfm_get_top_orders` | Top buy/sell orders (fast price check) |
-| `wfm_get_orders` | Filtered order list |
-| `wfm_price_check` | Search + top prices in one call |
+### Connect (this is usually the timeout cause)
 
-Respects the public **3 req/s** market rate limit. Supports `Platform`, `Language`, and `Crossplay` headers via tool args.
+Horizon authentication is **on by default**. A bare URL with no credential often hangs until the client times out.
 
-### WarframeStat.us
+In the Horizon dashboard: open the server → **Connect** → **Cursor**, and use the generated snippet.
 
-| Tool | Purpose |
-| --- | --- |
-| `ws_heartbeat` | API health |
-| `ws_get_worldstate` | Full worldstate (large) |
-| `ws_get_field` | Any single worldstate field |
-| `ws_get_sortie` / `ws_get_archon_hunt` | Daily / weekly hunts |
-| `ws_get_fissures` | Void fissures (+ Steel Path / tier filters) |
-| `ws_get_invasions` | Active invasions |
-| `ws_get_nightwave` | Nightwave challenges |
-| `ws_get_void_trader` | Baro Ki'Teer |
-| `ws_get_cycles` | Cetus / Vallis / Cambion / Earth / Zariman / Duviri |
-| `ws_get_alerts` / `ws_get_arbitration` | Alerts + arbitration |
-| `ws_get_steel_path` / `ws_get_daily_deals` / `ws_get_events` | Rotations / Darvo / events |
-| `ws_search_items` / `ws_get_item` | Item stats database |
-| `ws_search_drops` | Drop locations |
-| `ws_pricecheck` | Stat.us price-check helper |
-
-## Local run
-
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
-
-pip install -r requirements.txt
-python server.py
-```
-
-Server listens on `http://0.0.0.0:8000/mcp` (override with `HOST` / `PORT`).
-
-### Cursor / Claude remote config
+Or manually (API key from Horizon, prefix `fmcp_`):
 
 ```json
 {
   "mcpServers": {
     "warframe": {
-      "url": "http://127.0.0.1:8000/mcp"
+      "url": "https://YOUR-SERVER.fastmcp.app/mcp",
+      "headers": {
+        "Authorization": "Bearer fmcp_YOUR_KEY"
+      }
     }
   }
 }
 ```
 
-## Deploy to mcphosting.io
+For interactive clients that support MCP OAuth, the URL alone is enough after you complete Horizon sign-in.
 
-1. Push this repo to GitHub (under [Ma110w](https://github.com/Ma110w) or your account).
-2. Sign in at [mcphosting.io](https://www.mcphosting.io/) with GitHub.
-3. Select this repository and deploy.
-4. Start with one of:
+To make the endpoint public (no Horizon auth), disable Horizon authentication on the server (plan-dependent).
+
+## Local run
 
 ```bash
-python server.py
-# or
-fastmcp run server.py:mcp --transport http --stateless
+python -m venv .venv
+.venv\Scripts\activate
+pip install fastmcp httpx
+python main.py
 ```
 
-5. Install deps from `requirements.txt`.
-6. Connect clients to the issued HTTPS URL ending in `/mcp`.
+## Tools
 
-### Horizon
+Market (`wfm_*`): search items, item details, top orders, order list, price check.
 
-- Branch: `main`
-- Entrypoint: `server.py:mcp` (or `main.py`)
-- Keep **stateless HTTP** enabled (`FASTMCP_STATELESS_HTTP=true`) — Horizon does not support long-lived `GET /mcp` streams
-- After each push, confirm a **new build** succeeded before testing
-
-No API keys are required for the public endpoints used here.
-
-## Notes
-
-- Market item identifiers are **slugs** (`nikana_prime_blueprint`), not display names.
-- `wfm_price_check` / `wfm_search_items` resolve human names to slugs for you.
-- Full `ws_get_worldstate` responses are large; prefer field-specific tools.
-- Auth-required market actions (posting orders, OAuth) are intentionally omitted — OAuth 2.0 is not public yet per Warframe.market docs.
+Worldstate (`ws_*`): sortie, archon hunt, fissures, invasions, nightwave, Baro, cycles, alerts, arbitration, steel path, daily deals, events, item/drop search, plus `ping`.

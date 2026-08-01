@@ -12,8 +12,11 @@ import json
 import os
 from typing import Any, Literal
 
-# Horizon does not support long-lived GET /mcp streams; stateless HTTP is POST-only.
+# Horizon-friendly defaults (must be set before FastMCP settings resolve):
+# - stateless: no long-lived GET /mcp streams (unsupported on Horizon)
+# - json_response: avoid SSE response bodies that gateways often can't proxy
 os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
+os.environ.setdefault("FASTMCP_JSON_RESPONSE", "true")
 
 from fastmcp import FastMCP
 
@@ -37,6 +40,12 @@ mcp = FastMCP(
         "Default platforms: market=pc, worldstate=pc."
     ),
 )
+
+
+@mcp.tool
+def ping() -> str:
+    """Health check — returns ok if the Warframe MCP server is running."""
+    return "ok"
 
 WorldstateField = Literal[
     "alerts",
