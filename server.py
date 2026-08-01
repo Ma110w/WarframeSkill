@@ -17,6 +17,7 @@ from typing import Any, Literal
 # Stateless + JSON responses avoid sticky-session / SSE GET failures (Cursor 502s).
 os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
 os.environ.setdefault("FASTMCP_JSON_RESPONSE", "true")
+os.environ.setdefault("FASTMCP_SHOW_SERVER_BANNER", "false")
 
 from fastmcp import FastMCP
 

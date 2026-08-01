@@ -17,15 +17,16 @@ Do not add a Procfile, start script, or second entrypoint file. Hosts auto-detec
 
 ### Cursor config
 
-mcphosting’s `/mcp` is POST-only. Prefer bridging with `mcp-remote` instead of a raw `url` entry (avoids Cursor Streamable-HTTP GET/SSE 502s):
+mcphosting’s remote `/mcp` is currently flaky under cold start / concurrent handshakes (Cloudflare 502 after ~30s). For Cursor, run the server locally over stdio:
 
 ```json
 "warframe": {
-  "command": "npx",
-  "args": ["-y", "mcp-remote", "https://warframeskill.mcphosting.app/mcp"]
+  "command": "M:\\WarframeSkill\\.venv\\Scripts\\python.exe",
+  "args": ["M:\\WarframeSkill\\server.py"]
 }
 ```
 
+Remote URL hosting can still work for other clients when the origin is warm; if Cursor keeps 502’ing on `https://warframeskill.mcphosting.app/mcp`, use local stdio.
 ## Local
 
 ```bash
