@@ -8,20 +8,20 @@ Docs:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
+import socket
+import types
 from typing import Any, Literal
 
-# Cloud hosts inject PORT and often HOST=127.0.0.1. Binding only loopback
-# breaks edge proxies and races other local listeners on the same port.
-# Set FastMCP env defaults *before* importing/configuring the server object
-# so `python server.py` and `fastmcp run server.py:mcp` behave the same.
+# Cloud hosts inject PORT and often HOST=127.0.0.1. Prefer all-interfaces
+# bind so the edge proxy can reach the process. Set before FastMCP loads.
 if os.environ.get("PORT") or os.environ.get("FASTMCP_PORT"):
     if os.environ.get("HOST", "") in {"", "127.0.0.1", "localhost"}:
         os.environ["HOST"] = "0.0.0.0"
     os.environ.setdefault("FASTMCP_HOST", "0.0.0.0")
 os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
-os.environ.setdefault("FASTMCP_TRANSPORT", "http")
 
 from fastmcp import FastMCP
 
@@ -46,8 +46,9 @@ mcp = FastMCP(
     ),
 )
 
-# ASGI entrypoint for: uvicorn server:app --host 0.0.0.0 --port $PORT
-app = mcp.http_app(stateless_http=True)
+# NOTE: Do not export a module-level `app = mcp.http_app()`. Hosts that
+# auto-detect ASGI (`uvicorn server:app`) AND also run FastMCP will both
+# fight for PORT and die with EADDRINUSE.
 
 WorldstateField = Literal[
     "alerts",
@@ -597,6 +598,10 @@ def _bind_host() -> str:
     for key in ("FASTMCP_HOST", "BIND_HOST", "HOST"):
         value = os.environ.get(key, "").strip()
         if value:
+            if value in {"127.0.0.1", "localhost"} and (
+                os.environ.get("PORT") or os.environ.get("FASTMCP_PORT")
+            ):
+                return "0.0.0.0"
             return value
     return "0.0.0.0"
 
@@ -609,14 +614,66 @@ def _bind_port() -> int:
     return 8000
 
 
+def _claim_port(host: str, port: int) -> socket.socket:
+    """Bind early so rolling deploys / duplicate starters fail closed before lifespan."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((host, port))
+    sock.listen(2048)
+    return sock
+
+
+_EADDRINUSE = {98, 48, 10048}  # Linux, macOS, Windows
+
+
+async def _run_http_async(self: Any, *args: Any, **kwargs: Any) -> None:
+    """Horizon/mcphosting call this via FastMCP; claim PORT before uvicorn lifespan."""
+    host = kwargs.get("host") or _bind_host()
+    port = int(kwargs.get("port") or _bind_port())
+    kwargs["host"] = host
+    kwargs["port"] = port
+    kwargs["stateless_http"] = True
+
+    uv = dict(kwargs.get("uvicorn_config") or {})
+    uv.update({"reload": False, "workers": 1})
+    kwargs["uvicorn_config"] = uv
+
+    sock: socket.socket | None = None
+    last_err: OSError | None = None
+    for attempt in range(1, 31):
+        try:
+            sock = _claim_port(host, port)
+            break
+        except OSError as exc:
+            last_err = exc
+            if getattr(exc, "errno", None) not in _EADDRINUSE:
+                raise
+            print(
+                f"Port {port} in use (attempt {attempt}/30); waiting for previous process...",
+                flush=True,
+            )
+            await asyncio.sleep(1)
+    if sock is None:
+        raise SystemExit(
+            f"Port {port} still in use after 30s ({last_err}). "
+            "Use a single start path only: entrypoint `server.py:mcp` "
+            "(Horizon) or `python server.py` / `fastmcp run server.py:mcp` — "
+            "do not also run uvicorn against this module."
+        )
+
+    kwargs["sockets"] = [sock]
+    await FastMCP.run_http_async(self, *args, **kwargs)
+
+
+# Patch instance method so hosted `fastmcp run server.py:mcp` gets the fix too.
+mcp.run_http_async = types.MethodType(_run_http_async, mcp)  # type: ignore[method-assign]
+
+
 def main() -> None:
-    host = _bind_host()
-    port = _bind_port()
-    # Streamable HTTP + stateless mode for remote / multi-instance hosts.
     mcp.run(
         transport="http",
-        host=host,
-        port=port,
+        host=_bind_host(),
+        port=_bind_port(),
         stateless_http=True,
         uvicorn_config={"reload": False, "workers": 1},
     )
