@@ -15,6 +15,17 @@ Point the host at this GitHub repo. That is all.
 
 Do not add a Procfile, start script, or second entrypoint file. Hosts auto-detect FastMCP and start `mcp` themselves.
 
+### Cursor config
+
+mcphosting’s `/mcp` is POST-only. Prefer bridging with `mcp-remote` instead of a raw `url` entry (avoids Cursor Streamable-HTTP GET/SSE 502s):
+
+```json
+"warframe": {
+  "command": "npx",
+  "args": ["-y", "mcp-remote", "https://warframeskill.mcphosting.app/mcp"]
+}
+```
+
 ## Local
 
 ```bash

@@ -10,7 +10,13 @@ Docs:
 from __future__ import annotations
 
 import json
+import os
 from typing import Any, Literal
+
+# mcphosting is serverless / multi-instance and exposes POST-only /mcp.
+# Stateless + JSON responses avoid sticky-session / SSE GET failures (Cursor 502s).
+os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
+os.environ.setdefault("FASTMCP_JSON_RESPONSE", "true")
 
 from fastmcp import FastMCP
 
