@@ -592,11 +592,17 @@ async def ws_pricecheck(item_type: str, query: str) -> str:
 
 
 def main() -> None:
-    """Local-only runner. Horizon ignores this and starts `mcp` itself."""
-    host = os.environ.get("FASTMCP_HOST") or os.environ.get("HOST") or "127.0.0.1"
+    """CLI / mcphosting runner. Prefer `python server.py` or `python main.py`."""
+    port_set = bool(os.environ.get("PORT") or os.environ.get("FASTMCP_PORT"))
+    host = os.environ.get("FASTMCP_HOST") or os.environ.get("HOST") or (
+        "0.0.0.0" if port_set else "127.0.0.1"
+    )
+    if port_set and host in {"127.0.0.1", "localhost"}:
+        host = "0.0.0.0"
     port = int(os.environ.get("PORT") or os.environ.get("FASTMCP_PORT") or "8000")
-    mcp.run(transport="http", host=host, port=port)
+    mcp.run(transport="http", host=host, port=port, stateless_http=True)
 
 
 if __name__ == "__main__":
     main()
+
