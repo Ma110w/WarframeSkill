@@ -6,25 +6,26 @@ Author: snakeplisken47
 
 ## Remote host (ChatGPT skill)
 
-**Intended host:** Cloudflare Containers (always-on HTTPS on Cloudflare — not self-hosted).
+**Live connector URL:**
 
-After deploy, the connector URL looks like:
+`https://warframe-mcp.snakeplisken47.workers.dev/mcp`
 
-`https://warframe-mcp.<your-subdomain>.workers.dev/mcp`
+Hosted on **Cloudflare Containers** (not self-hosted). Handshake is hardened for streamable HTTP (`FASTMCP_STATELESS_HTTP` + immediate `202` on `notifications/*`).
 
 - **ChatGPT:** Settings → Developer Mode → add connector → that URL (Auth: None unless you add auth later).
-- Handshake is hardened for streamable HTTP (`FASTMCP_STATELESS_HTTP` + immediate `202` on `notifications/*`).
 
-### Deploy from GitHub (no local server)
+Requires a **Workers Paid** account ($5/mo) for Containers.
 
-1. Create a Cloudflare API token with **Workers Scripts Edit** + **Containers Edit** (and account read).
-2. In the GitHub repo → Settings → Secrets → Actions, add:
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID` = `18226a73a8a43f667d3ed3bd3fbbdd39`
-3. Push to `main`, or run **Actions → Deploy Cloudflare Container → Run workflow**.
-4. Wait a few minutes after the first deploy for the container to provision, then use the `*.workers.dev/mcp` URL in ChatGPT.
+### Redeploy from GitHub
 
-Scaffolding in-repo: `Dockerfile`, `http_app.py`, `src/index.ts`, `wrangler.toml`, `.github/workflows/deploy-cloudflare.yml`.
+Repo secrets (already configured for Ma110w/WarframeSkill):
+
+- `CLOUDFLARE_API_TOKEN` — Workers Scripts Edit + Workers Containers Edit
+- `CLOUDFLARE_ACCOUNT_ID` — `18226a73a8a43f667d3ed3bd3fbbdd39`
+
+Push to `main`, or run **Actions → Deploy Cloudflare Container → Run workflow**.
+
+Scaffolding: `Dockerfile`, `http_app.py`, `src/index.ts`, `wrangler.toml`, `.github/workflows/deploy-cloudflare.yml`.
 
 ### Legacy: mcphosting
 
