@@ -1,6 +1,6 @@
 """Warframe MCP server — Warframe.market v2 + WarframeStat.us.
 
-Horizon / mcphosting entrypoint: `server.py:mcp`
+Platform entrypoint object: `mcp` (file: server.py).
 Docs:
   - https://docs.warframe.market/docs/intro/
   - https://docs.warframestat.us/
@@ -9,14 +9,7 @@ Docs:
 from __future__ import annotations
 
 import json
-import os
 from typing import Any, Literal
-
-# Horizon-friendly defaults (must be set before FastMCP settings resolve):
-# - stateless: no long-lived GET /mcp streams (unsupported on Horizon)
-# - json_response: avoid SSE response bodies that gateways often can't proxy
-os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
-os.environ.setdefault("FASTMCP_JSON_RESPONSE", "true")
 
 from fastmcp import FastMCP
 
@@ -591,7 +584,7 @@ async def ws_pricecheck(item_type: str, query: str) -> str:
         return _err(exc)
 
 
-# Intentionally no `if __name__ == "__main__"` here.
-# mcphosting often auto-runs `fastmcp run server.py:mcp` AND a start command;
-# a second binder on $PORT causes EADDRINUSE. Use `main.py` or `start.sh`.
+if __name__ == "__main__":
+    # Local/stdio only. Hosts import `mcp` and ignore this block.
+    mcp.run()
 
