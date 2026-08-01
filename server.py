@@ -13,13 +13,22 @@ import json
 import os
 from typing import Any, Literal
 
-# mcphosting is serverless / multi-instance and exposes POST-only /mcp.
-# Stateless + JSON responses avoid sticky-session / SSE GET failures (Cursor 502s).
-os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
-os.environ.setdefault("FASTMCP_JSON_RESPONSE", "true")
-os.environ.setdefault("FASTMCP_SHOW_SERVER_BANNER", "false")
+# Force serverless-friendly transport BEFORE FastMCP settings are read.
+# mcphosting is multi-instance + POST-only; stateful/SSE sessions cause
+# notifications/initialized to hang until Cloudflare returns 502.
+os.environ["FASTMCP_STATELESS_HTTP"] = "true"
+os.environ["FASTMCP_JSON_RESPONSE"] = "true"
+os.environ["FASTMCP_SHOW_SERVER_BANNER"] = "false"
 
+import fastmcp
 from fastmcp import FastMCP
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+fastmcp.settings.stateless_http = True
+fastmcp.settings.json_response = True
+fastmcp.settings.show_server_banner = False
 
 from clients import (
     WFM_LANGUAGES,
@@ -46,6 +55,53 @@ mcp = FastMCP(
         "Default platforms: market=pc, worldstate=pc, plat packs=pc."
     ),
 )
+
+
+class _NotificationAckMiddleware(BaseHTTPMiddleware):
+    """Return 202 immediately for JSON-RPC notifications (no response body).
+
+    Some host proxies wait forever for a JSON body on notification POSTs, then
+    Cloudflare times out with 502 — breaking ChatGPT / mcp-remote connect().
+    """
+
+    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
+        if request.method != "POST":
+            return await call_next(request)
+
+        body = await request.body()
+
+        async def receive() -> dict[str, Any]:
+            return {"type": "http.request", "body": body, "more_body": False}
+
+        request = Request(request.scope, receive)
+
+        try:
+            payload = json.loads(body) if body else None
+        except Exception:
+            payload = None
+
+        if (
+            isinstance(payload, dict)
+            and "id" not in payload
+            and str(payload.get("method") or "").startswith("notifications/")
+        ):
+            return Response(status_code=202)
+
+        return await call_next(request)
+
+
+_orig_http_app = mcp.http_app
+
+
+def _http_app(*args: Any, **kwargs: Any):
+    kwargs["stateless_http"] = True
+    kwargs["json_response"] = True
+    app = _orig_http_app(*args, **kwargs)
+    app.add_middleware(_NotificationAckMiddleware)
+    return app
+
+
+mcp.http_app = _http_app  # type: ignore[method-assign]
 
 
 @mcp.tool
