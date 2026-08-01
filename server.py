@@ -1,6 +1,6 @@
 """Warframe MCP server — Warframe.market v2 + WarframeStat.us.
 
-Deployable on mcphosting.io via Streamable HTTP (`/mcp`).
+Deployable on mcphosting.io / Horizon via Streamable HTTP (`/mcp`).
 Docs:
   - https://docs.warframe.market/docs/intro/
   - https://docs.warframestat.us/
@@ -11,6 +11,17 @@ from __future__ import annotations
 import json
 import os
 from typing import Any, Literal
+
+# Cloud hosts inject PORT and often HOST=127.0.0.1. Binding only loopback
+# breaks edge proxies and races other local listeners on the same port.
+# Set FastMCP env defaults *before* importing/configuring the server object
+# so `python server.py` and `fastmcp run server.py:mcp` behave the same.
+if os.environ.get("PORT") or os.environ.get("FASTMCP_PORT"):
+    if os.environ.get("HOST", "") in {"", "127.0.0.1", "localhost"}:
+        os.environ["HOST"] = "0.0.0.0"
+    os.environ.setdefault("FASTMCP_HOST", "0.0.0.0")
+os.environ.setdefault("FASTMCP_STATELESS_HTTP", "true")
+os.environ.setdefault("FASTMCP_TRANSPORT", "http")
 
 from fastmcp import FastMCP
 
@@ -34,6 +45,9 @@ mcp = FastMCP(
         "Default platforms: market=pc, worldstate=pc."
     ),
 )
+
+# ASGI entrypoint for: uvicorn server:app --host 0.0.0.0 --port $PORT
+app = mcp.http_app(stateless_http=True)
 
 WorldstateField = Literal[
     "alerts",
@@ -579,11 +593,33 @@ async def ws_pricecheck(item_type: str, query: str) -> str:
         return _err(exc)
 
 
+def _bind_host() -> str:
+    for key in ("FASTMCP_HOST", "BIND_HOST", "HOST"):
+        value = os.environ.get(key, "").strip()
+        if value:
+            return value
+    return "0.0.0.0"
+
+
+def _bind_port() -> int:
+    for key in ("PORT", "FASTMCP_PORT"):
+        value = os.environ.get(key, "").strip()
+        if value:
+            return int(value)
+    return 8000
+
+
 def main() -> None:
-    host = os.environ.get("HOST", "0.0.0.0")
-    port = int(os.environ.get("PORT", "8000"))
-    # Streamable HTTP is required for remote hosts like mcphosting.io
-    mcp.run(transport="http", host=host, port=port)
+    host = _bind_host()
+    port = _bind_port()
+    # Streamable HTTP + stateless mode for remote / multi-instance hosts.
+    mcp.run(
+        transport="http",
+        host=host,
+        port=port,
+        stateless_http=True,
+        uvicorn_config={"reload": False, "workers": 1},
+    )
 
 
 if __name__ == "__main__":
