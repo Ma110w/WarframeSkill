@@ -15,18 +15,19 @@ Point the host at this GitHub repo. That is all.
 
 Do not add a Procfile, start script, or second entrypoint file. Hosts auto-detect FastMCP and start `mcp` themselves.
 
-### Cursor config
+### Remote URL (ChatGPT / Cursor)
 
-mcphosting’s remote `/mcp` is currently flaky under cold start / concurrent handshakes (Cloudflare 502 after ~30s). For Cursor, run the server locally over stdio:
+Public endpoint: `https://warframeskill.mcphosting.app/mcp`
+
+- **ChatGPT:** Settings → enable Developer Mode → add connector with that URL (Auth: None unless you add auth later).
+- **Cursor:** either paste the same `url`, or bridge with:
 
 ```json
 "warframe": {
-  "command": "M:\\WarframeSkill\\.venv\\Scripts\\python.exe",
-  "args": ["M:\\WarframeSkill\\server.py"]
+  "command": "npx",
+  "args": ["-y", "mcp-remote", "https://warframeskill.mcphosting.app/mcp", "--transport", "http-only"]
 }
 ```
-
-Remote URL hosting can still work for other clients when the origin is warm; if Cursor keeps 502’ing on `https://warframeskill.mcphosting.app/mcp`, use local stdio.
 ## Local
 
 ```bash
