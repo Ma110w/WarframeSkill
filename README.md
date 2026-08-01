@@ -4,20 +4,29 @@ FastMCP server for [Warframe.market](https://docs.warframe.market/docs/intro/) a
 
 Author: snakeplisken47
 
-## Horizon deploy
+## mcphosting.io
 
-1. Repo: [Ma110w/WarframeSkill](https://github.com/Ma110w/WarframeSkill), branch **`main`**
-2. Entrypoint: **`main.py`** (or `main.py:mcp`)
-3. Dependency file: `requirements.txt` (Horizon installs FastMCP for you)
-4. After deploy, open **Deployments** and confirm status is **Live**
+Use **one** start command only (two starters → `address already in use` on `:3000`):
 
-### Connect (this is usually the timeout cause)
+```bash
+sh start.sh
+```
 
-Horizon authentication is **on by default**. A bare URL with no credential often hangs until the client times out.
+or:
 
-In the Horizon dashboard: open the server → **Connect** → **Cursor**, and use the generated snippet.
+```bash
+fastmcp run server.py:mcp --transport http --host 0.0.0.0 --port $PORT --stateless
+```
 
-Or manually (API key from Horizon, prefix `fmcp_`):
+- Install: `pip install -r requirements.txt`
+- Do **not** also set `python server.py` if the platform auto-runs FastMCP
+- `server.py` no longer self-starts on import/`__main__` for that reason
+
+## Horizon
+
+1. Branch **`main`**, entrypoint **`main.py:mcp`** or **`server.py:mcp`**
+2. Deps: `requirements.txt`
+3. Auth is on by default — use dashboard **Connect → Cursor**, or:
 
 ```json
 {
@@ -32,16 +41,13 @@ Or manually (API key from Horizon, prefix `fmcp_`):
 }
 ```
 
-For interactive clients that support MCP OAuth, the URL alone is enough after you complete Horizon sign-in.
-
-To make the endpoint public (no Horizon auth), disable Horizon authentication on the server (plan-dependent).
-
 ## Local run
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install fastmcp httpx
+pip install -r requirements.txt
+set PORT=8000
 python main.py
 ```
 
