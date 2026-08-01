@@ -1,0 +1,21 @@
+[project]
+name = "warframe-mcp"
+version = "1.0.0"
+description = "MCP server for Warframe.market and WarframeStat.us APIs"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "snakeplisken47" }]
+dependencies = [
+    "fastmcp>=3.0.0,<4",
+    "httpx>=0.28.0,<1",
+]
+
+[project.scripts]
+warframe-mcp = "server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["server", "clients"]
