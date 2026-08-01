@@ -4,35 +4,48 @@ FastMCP server for [Warframe.market](https://docs.warframe.market/docs/intro/), 
 
 Author: snakeplisken47
 
-## Deploy (mcphosting / Horizon)
+## Remote host (ChatGPT skill)
 
-Point the host at this GitHub repo. That is all.
+**Intended host:** Cloudflare Containers (always-on HTTPS on Cloudflare — not self-hosted).
 
-- Repo: https://github.com/Ma110w/WarframeSkill
-- Branch: `main`
-- Entrypoint object: `server.py` → `mcp`
-- Dependencies: `requirements.txt`
+After deploy, the connector URL looks like:
 
-Do not add a Procfile, start script, or second entrypoint file. Hosts auto-detect FastMCP and start `mcp` themselves.
+`https://warframe-mcp.<your-subdomain>.workers.dev/mcp`
 
-### Remote URL (ChatGPT / Cursor)
+- **ChatGPT:** Settings → Developer Mode → add connector → that URL (Auth: None unless you add auth later).
+- Handshake is hardened for streamable HTTP (`FASTMCP_STATELESS_HTTP` + immediate `202` on `notifications/*`).
 
-Public endpoint: `https://warframeskill.mcphosting.app/mcp`
+### Deploy from GitHub (no local server)
 
-- **ChatGPT:** Settings → enable Developer Mode → add connector with that URL (Auth: None unless you add auth later).
-- **Cursor:** either paste the same `url`, or bridge with:
+1. Create a Cloudflare API token with **Workers Scripts Edit** + **Containers Edit** (and account read).
+2. In the GitHub repo → Settings → Secrets → Actions, add:
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID` = `18226a73a8a43f667d3ed3bd3fbbdd39`
+3. Push to `main`, or run **Actions → Deploy Cloudflare Container → Run workflow**.
+4. Wait a few minutes after the first deploy for the container to provision, then use the `*.workers.dev/mcp` URL in ChatGPT.
 
-```json
-"warframe": {
-  "command": "npx",
-  "args": ["-y", "mcp-remote", "https://warframeskill.mcphosting.app/mcp", "--transport", "http-only"]
-}
-```
-## Local
+Scaffolding in-repo: `Dockerfile`, `http_app.py`, `src/index.ts`, `wrangler.toml`, `.github/workflows/deploy-cloudflare.yml`.
+
+### Legacy: mcphosting
+
+`https://warframeskill.mcphosting.app/mcp` still serves tools, but `notifications/initialized` has been hanging into Cloudflare **502**s from that gateway — unreliable for ChatGPT / mcp-remote. Prefer Cloudflare Containers above.
+
+Horizon-style hosts (if you use one): entrypoint object `server.py` → `mcp`, deps `requirements.txt`. Do not add a Procfile or second runner.
+
+## Local (optional, Cursor only)
 
 ```bash
 pip install -r requirements.txt
 python server.py
+```
+
+Cursor stdio example:
+
+```json
+"warframe": {
+  "command": "M:\\WarframeSkill\\.venv\\Scripts\\python.exe",
+  "args": ["M:\\WarframeSkill\\server.py"]
+}
 ```
 
 ## Tools

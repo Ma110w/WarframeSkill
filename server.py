@@ -44,6 +44,7 @@ from platinum import convert_plat_value, list_packs, price_pack, recommend_packs
 
 mcp = FastMCP(
     name="Warframe",
+    version="1.3.0",
     instructions=(
         "Query live Warframe marketplace prices (warframe.market v2), "
         "worldstate / item / drop data (warframestat.us), Overframe.gg builds, "
