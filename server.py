@@ -1,9 +1,10 @@
-"""Warframe MCP server — Warframe.market v2 + WarframeStat.us.
+"""Warframe MCP server — Warframe.market v2 + WarframeStat.us + Overframe.gg.
 
 Platform entrypoint object: `mcp` (file: server.py).
 Docs:
   - https://docs.warframe.market/docs/intro/
   - https://docs.warframestat.us/
+  - https://overframe.gg/
 """
 
 from __future__ import annotations
@@ -22,14 +23,17 @@ from clients import (
     wfm,
     ws,
 )
+from overframe import of
 
 mcp = FastMCP(
     name="Warframe",
     instructions=(
-        "Query live Warframe marketplace prices (warframe.market v2) and "
-        "worldstate / item / drop data (warframestat.us). "
+        "Query live Warframe marketplace prices (warframe.market v2), "
+        "worldstate / item / drop data (warframestat.us), and Overframe.gg builds. "
         "Prefer market slugs like 'nikana_prime_blueprint'. "
         "Use wfm_search_items when the slug is unknown. "
+        "For community builds: of_search_items (search box) → of_list_builds → "
+        "of_get_build (includes resolved mods). "
         "Default platforms: market=pc, worldstate=pc."
     ),
 )
@@ -580,6 +584,89 @@ async def ws_pricecheck(item_type: str, query: str) -> str:
     """
     try:
         return _ok(await ws.pricecheck(item_type, query))
+    except Exception as exc:
+        return _err(exc)
+
+
+# ---------------------------------------------------------------------------
+# Overframe.gg tools
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool
+async def of_search_items(query: str, limit: int = 20) -> str:
+    """Search Overframe's item search box (warframes, weapons, companions, etc.).
+
+    Returns Overframe item ids/names/urls. Use the id with of_list_builds.
+    Example queries: "Mesa Prime", "Laetum", "Nataruk".
+    """
+    try:
+        limit = max(1, min(int(limit), 50))
+        results = await of.search_items(query, limit=limit)
+        return _ok({"query": query, "count": len(results), "items": results})
+    except Exception as exc:
+        return _err(exc)
+
+
+@mcp.tool
+async def of_list_builds(
+    item: str | None = None,
+    item_id: int | None = None,
+    title: str | None = None,
+    ordering: str = "-score",
+    limit: int = 20,
+    offset: int = 0,
+) -> str:
+    """List Overframe builds for an item (like the item builds page).
+
+    Provide either item (name, e.g. "Mesa Prime") or item_id (from of_search_items).
+    Optional title filters build titles (e.g. "steel path").
+    ordering examples: "-score", "-updated", "created".
+    """
+    try:
+        if item is None and item_id is None and not title:
+            raise ApiError(
+                "overframe.gg",
+                "Provide item, item_id, and/or title to list builds.",
+            )
+        limit = max(1, min(int(limit), 50))
+        offset = max(0, int(offset))
+        data = await of.list_builds(
+            item_id=item_id,
+            item=item,
+            title=title,
+            ordering=ordering,
+            limit=limit,
+            offset=offset,
+        )
+        return _ok(data)
+    except Exception as exc:
+        return _err(exc)
+
+
+@mcp.tool
+async def of_get_build(build_id: int, resolve_mods: bool = True) -> str:
+    """Get a full Overframe build, including slot mods (names, ranks, drain).
+
+    build_id comes from of_list_builds. When resolve_mods is true (default),
+    numeric mod ids are resolved to names/polarities via Overframe's mod DB.
+    """
+    try:
+        data = await of.get_build(int(build_id), resolve_mods=bool(resolve_mods))
+        return _ok(data)
+    except Exception as exc:
+        return _err(exc)
+
+
+@mcp.tool
+async def of_top_mods(item: str, limit: int = 20) -> str:
+    """Get the most-used mods on Overframe for an item.
+
+    item may be a name ("Mesa Prime") or Overframe item id.
+    """
+    try:
+        limit = max(1, min(int(limit), 50))
+        return _ok(await of.top_mods(item, limit=limit))
     except Exception as exc:
         return _err(exc)
 
