@@ -74,37 +74,25 @@ Server listens on `http://0.0.0.0:8000/mcp` (override with `HOST` / `PORT`).
 1. Push this repo to GitHub (under [Ma110w](https://github.com/Ma110w) or your account).
 2. Sign in at [mcphosting.io](https://www.mcphosting.io/) with GitHub.
 3. Select this repository and deploy.
-4. Use **exactly one** start path (two starters = `address already in use` on `:3000`):
+4. Start with one of:
 
 ```bash
 python server.py
 # or
-fastmcp run server.py:mcp --transport http --host 0.0.0.0 --port $PORT --stateless
+fastmcp run server.py:mcp --transport http --stateless
 ```
-
-Do **not** also run `uvicorn server:app` — this repo intentionally does not export a module-level ASGI `app` for that reason.
 
 5. Install deps from `requirements.txt`.
 6. Connect clients to the issued HTTPS URL ending in `/mcp`.
 
-If you still see `address already in use`, the server retries the port for 30s (rolling deploys). After that, clear the stuck process / redeploy with a single entrypoint.
+### Horizon
 
-CLI option:
+- Branch: `main`
+- Entrypoint: `server.py:mcp` (or `main.py`)
+- Keep **stateless HTTP** enabled (`FASTMCP_STATELESS_HTTP=true`) — Horizon does not support long-lived `GET /mcp` streams
+- After each push, confirm a **new build** succeeded before testing
 
-```bash
-npm install -g mcphosting-cli
-mcphosting login
-mcphosting deploy
-```
-
-The server uses **Streamable HTTP** (`transport="http"`), which remote hosts require. No API keys are needed for the public endpoints used here.
-
-### Horizon / `fastmcp run`
-
-Entrypoint: **`server.py:mcp`** only (Horizon ignores `__main__`).  
-Do not add a second start command.  
-Env when `PORT` is present: `FASTMCP_HOST=0.0.0.0`, `FASTMCP_STATELESS_HTTP=true`.  
-See also `fastmcp.json`.
+No API keys are required for the public endpoints used here.
 
 ## Notes
 

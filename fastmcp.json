@@ -8,13 +8,8 @@
     "dependencies": ["httpx>=0.28.0,<1"]
   },
   "deployment": {
-    "transport": "http",
-    "host": "0.0.0.0",
-    "path": "/mcp",
-    "log_level": "INFO",
     "env": {
-      "FASTMCP_STATELESS_HTTP": "true",
-      "FASTMCP_HOST": "0.0.0.0"
+      "FASTMCP_STATELESS_HTTP": "true"
     }
   }
 }
